@@ -1,73 +1,65 @@
 'use client'
 import { useState } from "react";
+import { useDispatch, useSelector } from 'react-redux';
+import { addTestimonial, deleteTestimonial, updateTestimonial } from '../../store/testimonialSlice';
 
 const Testimonial = () => {
-    const [testimonials, setTestimonials] = useState([
-      {
-        id: 1,
-        name: "Ange Olivier",
-        content: "J'ai eu la chance de collaborer avec Tony sur plusieurs projets de développement web et je dois dire que son expertise technique et sa créativité ont été des atouts majeurs"
-      },
-      {
-        id: 2,
-        name: "Gabin",
-        content: "Travailler avec Axel a été une expérience exceptionnelle. Sa maîtrise des langages de programmation et sa capacité à résoudre les problèmes complexes sont remarquables"
-      }
-    ]);
-  
-    const [newTestimonial, setNewTestimonial] = useState({
-      name: "",
-      content: ""
+  const testimonials = useSelector((state) => state.testimonials);
+  const dispatch = useDispatch();
+
+  const [newTestimonial, setNewTestimonial] = useState({
+    name: "",
+    content: ""
+  });
+
+  const [editingTestimonialId, setEditingTestimonialId] = useState(null);
+
+  const handleInputChange = (e) => {
+    setNewTestimonial({
+      ...newTestimonial,
+      [e.target.name]: e.target.value
     });
+  };
+
+  const addNewTestimonial = () => {
+    if (newTestimonial.name === "" || newTestimonial.content === "") {
+      alert("Veuillez remplir tous les champs avant d'ajouter un témoignage.");
+      return;
+    }
+
+    dispatch(addTestimonial({
+      id: testimonials.length + 1,
+      ...newTestimonial
+    }));
+
+    setNewTestimonial({ name: "", content: "" });
+  };
+
+  const deleteTestimonialById = (id) => {
+    dispatch(deleteTestimonial(id));
+  };
+
+  const editTestimonial = (id) => {
+    setEditingTestimonialId(id);
+    const testimonial = testimonials.find((t) => t.id === id);
+    setNewTestimonial({ name: testimonial.name, content: testimonial.content });
+  };
+
+  const updateTestimonialHandler = () => {
+    if (newTestimonial.name === "" || newTestimonial.content === "") {
+      alert("Veuillez remplir tous les champs avant de mettre à jour le témoignage.");
+      return;
+    }
+
+    dispatch(updateTestimonial({
+      id: editingTestimonialId,
+      ...newTestimonial,
+    }));
+
+    setEditingTestimonialId(null);
+    setNewTestimonial({ name: "", content: "" });
+  };
   
-    const [editingTestimonialId, setEditingTestimonialId] = useState(null);
-  
-    const handleInputChange = (e) => {
-      setNewTestimonial({
-        ...newTestimonial,
-        [e.target.name]: e.target.value
-      });
-    };
-  
-    const addTestimonial = () => {
-      if (newTestimonial.name === "" || newTestimonial.content === "") {
-        alert("remplir les champs vide svp");
-        return;
-      }
-  
-      const testimonial = {
-        id: testimonials.length + 1,
-        ...newTestimonial
-      };
-  
-      setTestimonials([...testimonials, testimonial]);
-      setNewTestimonial({ name: "", content: "" });
-    };
-  
-    const deleteTestimonial = (id) => {
-      const updatedTestimonials = testimonials.filter((testimonial) => testimonial.id !== id);
-      setTestimonials(updatedTestimonials);
-    };
-  
-    const editTestimonial = (id) => {
-      setEditingTestimonialId(id);
-      const testimonial = testimonials.find((t) => t.id === id);
-      setNewTestimonial({ name: testimonial.name, content: testimonial.content });
-    };
-  
-    const updateTestimonial = () => {
-      if (newTestimonial.name === "" || newTestimonial.content === "") {
-        alert("Please fill in all fields before updating the testimonial.");
-        return;
-      }
-  
-      const updatedTestimonials = testimonials.map((testimonial) =>
-        testimonial.id === editingTestimonialId ? { ...testimonial, ...newTestimonial } : testimonial
-      );
-      setTestimonials(updatedTestimonials);
-      setEditingTestimonialId(null);
-      setNewTestimonial({ name: "", content: "" });
-    };
   
     return (
       <div>
@@ -99,7 +91,7 @@ const Testimonial = () => {
                     <p className="font-italic font-weight-normal mb-0">- {testimonial.name}</p>
                     <div className="mt-3">
                       <button className="btn btn-primary mx-1" onClick={() => editTestimonial(testimonial.id)}>Edit</button>
-                      <button className="btn btn-danger mx-1" onClick={() => deleteTestimonial(testimonial.id)}>Delete</button>
+                      <button className="btn btn-danger mx-1" onClick={() => deleteTestimonialById(testimonial.id)}>Delete</button>
                     </div>
                   </div>
                 </div>
@@ -131,9 +123,9 @@ const Testimonial = () => {
                   ></textarea>
                 </div>
                 {editingTestimonialId ? (
-                  <button type="button" className="btn btn-primary" onClick={updateTestimonial}>Update</button>
+                  <button type="button" className="btn btn-primary" onClick={updateTestimonialHandler}>Update</button>
                 ) : (
-                  <button type="button" className="btn btn-primary" onClick={addTestimonial}>Add</button>
+                  <button style={{marginBottom:'50px'}} type="button" className="btn btn-primary" onClick={addNewTestimonial}>Add</button>
                 )}
               </form>
             </div>
